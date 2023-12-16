@@ -21,7 +21,7 @@ for /f "delims=" %%a in ('type "%CONFIG_DIR%\setup.cfg"^|findstr /b "internal.fo
 
 set dbls_ver=2.0.114.00000
 set brand_ver=0.2.0.0
-set dbls_stat=final
+set dbls_stat=alpha
 
 set dbls_brand=Setup
    set dbls_title=Andre's New Device Configurator
@@ -227,10 +227,9 @@ call :info_text
 
 
 
-if "%*"=="-info" goto :info
-if "%*"=="-i" goto :info
-if "%force_info_show%"=="1" goto :info
-
+if "%*"=="-info" call :info 
+if "%*"=="-i" call :info 
+if "%force_info_show%"=="1" call :info 
 
 
 rem if /i "%~1"=="-d" goto :diag
@@ -265,8 +264,11 @@ goto :sys_chk
 	goto :eof
 
 
+:funct_banner_setup_generic
+
+
 :help
-	rem These little utility menus don't even interface the logging system and imo is unneccessary, so the whole Exit routine is skipped, for the sake of simplicity.
+	rem These little utility menus (except for info) don't even interface the logging system and imo is unneccessary, so the whole Exit routine is skipped, for the sake of simplicity.
 	call funct_banner_help
 
 	echo Setup Version: %dbls_ver%
@@ -274,7 +276,7 @@ goto :sys_chk
 	echo For more information about this program's configuration, use the -info or -i parameter 
 	echo. 
 	echo.
-	echo NOTE: Using a parameter that uses paths, those only support monospaced paths, otherwise shorten them as if you were using MS-DOS. All due to a weird bug.
+	echo NOTE: Using a parameter that uses paths, use quotation marks in the paths with folders that have spaces, e.g. "D:\cool folder\file.txt"
 	echo.
 	echo  -help (-?)  =  Shows this help screen.
 	echo  -info (-i)  =  Shows this program's configuration information.
@@ -335,9 +337,16 @@ goto :sys_chk
 	echo =======================================================
 	echo.
 
+	set og_log_inst=%log_inst%
 	set log_inst=con
 	call :info_text
+	call :info_text_ext
+	set log_inst=%og_log_inst%
+	
+	if "%mode%"=="1" goto :end
+	
 	pause
+	goto :eof
 
 
 :sys_chk
