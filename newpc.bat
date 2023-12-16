@@ -8,6 +8,9 @@ if not defined bin_dir set bin_dir=%~dp0bin\
 set output=con
 rem need to fix user pref
 
+	rem Code here is used for debugging, remove when fixed
+	set internal.force_echo=1
+
 
 :internal
 if exist "%CONFIG_DIR%\setup.cfg" (
@@ -21,7 +24,7 @@ for /f "delims=" %%a in ('type "%CONFIG_DIR%\setup.cfg"^|findstr /b "internal.fo
 
 set dbls_ver=2.0.114.00000
 set brand_ver=0.2.0.0
-set dbls_stat=alpha
+set dbls_stat=final
 
 set dbls_brand=Setup
    set dbls_title=Andre's New Device Configurator
@@ -29,7 +32,6 @@ set dbls_underline================================
 set dbls_subtext=Configuring your device...
 set dbls_act_text=Please wait while Setup installs and configures your copy of %dbls_brand%...
 set dbls_notice_text=Your system administrator has made an automated installer, if something goes wrong, please contact your system adminstrator.
-set dbls_copyrt_text=(C) Copyright 2018 - 2023 Duplex Software Corp.
 set dbls_ver_show=1
 set dflt_logdir=%config_dir%\Logs
 
@@ -51,7 +53,6 @@ set output=con
 rem set output_deb=nul
 set con_dirty=0
 set setup_state=0
-set ins_att=0
 if %dbls_ver_show%==1 (set dbls_contitle=%dbls_title% v%brand_ver%) else (set dbls_contitle=%dbls_title%)
 rem The line of code below is used to turn on echo, only if it is a in development/alpha build.
 if "%internal.force_echo%"=="1" (if %dbls_stat%==dev (@echo on ) else (goto :placeholder))
@@ -223,13 +224,20 @@ echo.>>%log_inst%
 echo.>>%log_inst%
 echo.>>%log_inst%
 echo ===================================== [%dbls_brand%] Started on %DATE% %TIME% =====================================>>%log_inst% 
-call :info_text
 
+:loadspecs
+for /f "tokens=4-5 delims=. " %%i in ('ver') do set VERSION=%%i.%%j
+FOR /F %%A IN ('hostname') DO set comp_name=%%A
 
+rem chk_inst
+rem FOR /F "skip=2 tokens=2,*" %%A IN ('reg.exe query "HKCU\SOFTWARE\Duplex Software\Corporate Minecraft Mods Installer" /v "Path" 2^> nul') DO set install_dir="%%B"
+rem FOR /F "skip=2 tokens=2,*" %%A IN ('reg.exe query "HKLM\SOFTWARE\Duplex Software\Corporate Minecraft Mods Installer" /v "Path" 2^> nul') DO set install_dir="%%B"
+if not defined installdir set installdir=Standalone (N/A)
 
-if "%*"=="-info" call :info 
-if "%*"=="-i" call :info 
-if "%force_info_show%"=="1" call :info 
+if "%*"=="-info" goto :info
+if "%*"=="-i" goto :info
+if "%force_info_show%"=="1" goto :info
+
 
 
 rem if /i "%~1"=="-d" goto :diag
@@ -246,7 +254,7 @@ if "%internal.test.err.enable%"=="1" (
 
 
 :wip_warn
-	rem if "%skip_betamsg%"=="1" goto :sys_chk
+if "%skip_betamsg%"=="1" goto :sys_chk
 
 	rem if "%dbls_stat%"=="dev" call :dev_msg
 	rem if "%dbls_stat%"=="beta" call :dev_msg
@@ -264,11 +272,8 @@ goto :sys_chk
 	goto :eof
 
 
-:funct_banner_setup_generic
-
-
 :help
-	rem These little utility menus (except for info) don't even interface the logging system and imo is unneccessary, so the whole Exit routine is skipped, for the sake of simplicity.
+	rem These little utility menus don't even interface the logging system and imo is unneccessary, so the whole Exit routine is skipped, for the sake of simplicity.
 	call funct_banner_help
 
 	echo Setup Version: %dbls_ver%
@@ -276,7 +281,7 @@ goto :sys_chk
 	echo For more information about this program's configuration, use the -info or -i parameter 
 	echo. 
 	echo.
-	echo NOTE: Using a parameter that uses paths, use quotation marks in the paths with folders that have spaces, e.g. "D:\cool folder\file.txt"
+	echo NOTE: Using a parameter that uses paths, those only support monospaced paths, otherwise shorten them as if you were using MS-DOS. All due to a weird bug.
 	echo.
 	echo  -help (-?)  =  Shows this help screen.
 	echo  -info (-i)  =  Shows this program's configuration information.
@@ -292,43 +297,45 @@ goto :sys_chk
 
 
 :help_log_cmd
-	echo.
-	call funct_banner_help
-
-	echo Parameter Help
-	echo.
-	echo Allows you to specify a different log directory or to disable saving logs
-	echo. 
-	echo.
-	echo  -log 
-	echo        [path]   =  New log directory
-	echo        none     =  To disable saving logs
-	echo.
-	echo   Examples:
-	echo     -log "Z:\logs"
-	echo     -log none
-	echo.
-	call :mode_hdl
-	goto :eof
+echo.
+echo %dbls_title% Help information
+echo ==================================================
+echo.
+echo Parameter Help
+echo.
+echo Allows you to specify a different log directory or to disable saving logs
+echo. 
+echo.
+echo  -log 
+echo        [path]   =  New log directory
+echo        none     =  To disable saving logs
+echo.
+echo   Examples:
+echo     -log "Z:\logs"
+echo     -log none
+echo.
+call :mode_hdl
+goto :eof
 
 
 
 :help_nomc_cmd
-	echo.
-	call funct_banner_help
-
-	echo Parameter Help
-	echo.
-	echo Allows you to use this utility without a properly installed copy of Minecraft.
-	echo.
-	echo NOTE: If you use this to override the check for a Minecraft install and you don't have a copy of Java, you will need to download Java or specify an install of Java.
-	echo.
-	echo  -nomc
-	echo.
-	echo   There are no further options for this parameter
-	echo.
-	call :mode_hdl
-	goto :eof
+echo.
+echo %dbls_title% Help information
+echo ==================================================
+echo.
+echo Parameter Help
+echo.
+echo Allows you to use this utility without a properly installed copy of Minecraft.
+echo.
+echo NOTE: If you use this to override the check for a Minecraft install and you don't have a copy of Java, you will need to download Java or specify an install of Java.
+echo.
+echo  -nomc
+echo.
+echo   There are no further options for this parameter
+echo.
+call :mode_hdl
+goto :eof
 
 
 :info
@@ -337,16 +344,9 @@ goto :sys_chk
 	echo =======================================================
 	echo.
 
-	set og_log_inst=%log_inst%
 	set log_inst=con
 	call :info_text
-	call :info_text_ext
-	set log_inst=%og_log_inst%
-	
-	if "%mode%"=="1" goto :end
-	
 	pause
-	goto :eof
 
 
 :sys_chk
@@ -420,62 +420,97 @@ rem the functions
 	echo Present Settings >>%output%
 	echo -------------------- >>%output%
 
-	if "%log%"=="1" ( 
-		echo Log is enabled >>%output%
-		echo Log Dir: "%log_dir%" >>%output%
-			) else (
-			echo Logging is disabled, but a temporary file is created in: "%output%" >>%output%
+if "%log%"=="1" ( 
+	echo Log is enabled >>%output%
+	echo Log Dir: "%log_dir%" >>%output%
+	) else (
+		echo Logging is disabled, but a temporary file is created in: "%output%" >>%output%
 	)
 
-	echo. >>%output%
-	echo ===================================== >>%output%
-	echo The following packages are currently selected:
-	if "%install_feat_esse%"=="1" echo %esse_name%
-	if "%install_feat_meapps%"=="1" echo %meapps_name%
-	if "%install_feat_av%"=="1" echo %av_name%
-	if "%install_feat_vm%"=="1" echo %vm_name%
-	if "%install_feat_diskmulti%"=="1" echo %diskmulti_name%
-	echo. >>%output%
-	echo Custom Settings >>%output%
-	echo -------------------- >>%output%
-	if defined skip_wgupg echo skip_wgupg=%skip_wgupg% >>%output%
-	if defined skip_nofastboot echo skip_nofastboot=%skip_nofastboot% >>%output%
-	if defined skip_win10dvd echo skip_win10dvd=%skip_win10dvd% >>%output%
-	echo. >>%output%
-	echo ===================================== >>%output%
+echo. >>%output%
+echo ===================================== >>%output%
+echo The following packages are currently selected:
+if "%install_feat_esse%"=="1" echo %esse_name%
+if "%install_feat_meapps%"=="1" echo %meapps_name%
+if "%install_feat_av%"=="1" echo %av_name%
+if "%install_feat_vm%"=="1" echo %vm_name%
+if "%install_feat_diskmulti%"=="1" echo %diskmulti_name%
+echo. >>%output%
+echo Custom Settings >>%output%
+echo -------------------- >>%output%
+if defined skip_wgupg echo skip_wgupg=%skip_wgupg% >>%output%
+if defined skip_nofastboot echo skip_nofastboot=%skip_nofastboot% >>%output%
+if defined skip_win10dvd echo skip_win10dvd=%skip_win10dvd% >>%output%
+echo. >>%output%
+echo ===================================== >>%output%
 
 
-	echo Other Settings >>%output%
-	echo -------------------- >>%output%
-	if defined internal.force_echo echo internal.force_echo=%internal.force_echo% >>%output%
-	if defined internal.force_pause echo internal.force_pause=%internal.force_pause% >>%output%
-	if defined internal.test.err.enable echo internal.test.err.enable=%internal.test.err.enable% >>%output%
-	if defined internal.test.err echo internal.test.err=%internal.test.err% >>%output%
-	if defined skip_betamsg echo skip_betamsg=%skip_betamsg% >>%output%
-	echo. >>%output%
-	echo ===================================== >>%output%
-	echo. >>%output%
-	echo Parameters >>%output%
-	echo -------------------- >>%output%
-	echo %* >>%output%
-	echo. >>%output%
+echo Other Settings >>%output%
+echo -------------------- >>%output%
+if defined internal.force_echo echo internal.force_echo=%internal.force_echo% >>%output%
+if defined internal.force_pause echo internal.force_pause=%internal.force_pause% >>%output%
+if defined internal.test.err.enable echo internal.test.err.enable=%internal.test.err.enable% >>%output%
+if defined internal.test.err echo internal.test.err=%internal.test.err% >>%output%
+if defined skip_betamsg echo skip_betamsg=%skip_betamsg% >>%output%
+echo. >>%output%
+echo ===================================== >>%output%
+echo. >>%output%
+echo Parameters >>%output%
+echo -------------------- >>%output%
+echo %* >>%output%
+echo. >>%output%
+pause 
+goto :eof
 
-	goto :eof
 
+
+
+
+
+:sys_chk
+
+:winveroverride
+rem This will override the check for the installed version of Windows. Use only for when supporting versions of Windows that don't exist when the launcher is being written.
+if "%override_winverchk%"=="1" (
+	echo [%date% %time%] INFO: Windows version check were overridden, using a flag>>%log_inst% 
+	goto :misc_sys_chk
+)
+
+if "%override_syschk%"=="1" (
+	echo [%date% %time%] INFO: All system checks were overridden, using a flag>>%log_inst% 
+	goto :misc_sys_chk
+)
+
+:WINVERCHK
+setlocal
+if "%version%" GEQ "10.0" goto :misc_sys_chk
+if "%version%" LEQ "6.3" goto :eos
+endlocal
+
+:eos
+echo.
+echo Windows version %version% is not supported at this time
+pause
+goto :end
+
+:misc_sys_chk
+if defined ChocolateyInstall set choco_inst=1
+
+:unattended
+if "%unattend_setup_enable%"=="1" (
+	goto :auto_mode
+)
 
 
 
 :main
 :main_core
-call :clean_con
+rem call :clean_con
 if not "%internal.force_echo%"=="1" cls
 if "%auto_inst%"=="1" goto auto_mode
 
 :main_menu
 color
-echo Configurator version %brand_ver%
-echo.
-echo.
 echo What would you like to install?
 echo.
 echo [1] %esse_name%
@@ -520,7 +555,7 @@ if "%input%"=="9" (
 	)
 
 if "%input%"=="0" goto :end
-if /i "%input%"=="a" goto :custom
+if /i "%input%"=="a" call :custom
 if /i "%input%"=="c" goto :end
 if /i "%input%"=="b" goto :debug
 if /i "%input%"=="h" call :help 
@@ -534,30 +569,12 @@ if %input% GEQ 1 (
 )
 goto :main
 
-:incompl
-set con_dirty=1
+:custom
+set call_good=1
 echo.
 echo Not implemented
 pause
-
 goto :eof
-
-
-:custom
-rem multiple_choice_ux
-set call_good=1
-if not "%internal_feat_exp_multiple_choice_ux%"=="1" (
-	call :incompl
-	goto :main
-)
-
-
-
-
-
-
-goto :custom
-
 
 
 :extras_menu
@@ -568,14 +585,14 @@ echo.
 echo Scripts 
 echo.
 echo [1] Disable fast startup [not available yet standalone]
-echo [2] Update Windows [not implemented]
+echo [2] ???   TBA
 echo [3] ???   TBA
 echo [4] ???   TBA
 echo [5] ???   TBA
 echo.
-echo Extras (commands/options available)
-echo [6] Shutdown / Restart
-echo [7] Lock device 
+echo Extras
+echo [6] ???   TBA
+echo [7] ???   TBA
 echo [8] ???   TBA
 echo [9] ???   TBA
 echo.
@@ -591,39 +608,9 @@ if "%input%"=="0" goto :main
 if /i "%input%"=="b" goto :debug
 if /i "%input%"=="c" goto :main
 rem if "%input%" GEQ "1" goto :common
-
-
-
 call :invalid
 
 goto :extras_menu
-
-
-:toolset
-rem I will move all the extra command sets to here
-rem   --Andre
-
-:power_ux
-rem need to add the prompt lolol
-call :incompl
-
-rem		echo.
-rem		echo Do you want to restart or shutdown or cancel?
-rem		pause
-goto :eof
-
-:power_shutdown
-echo.
-echo Your device will shutdown in 60 seconds...
-shutdown /s /t 60 /c "Shutdown requested by %dbls_title%
-waitfor null /t 60
-goto :eof
-
-:lock_sys
-rundll32.exe user32.dll,LockWorkStation
-goto :eof
-
-
 
 :debug
 set con_dirty=1
@@ -688,26 +675,17 @@ echo.
 echo %dbls_notice_text%
 echo.
 echo.
-echo %dbls_copyrt_text%
+echo (C) Copyright 2018 - 2023 Duplex Software Corp.
 echo.
 echo.
 
-set ins_att=0
-rem the command above effectively sets the errorlevel, or actually the amount of attempts, which could be useful
 call :chk_winget
-
 goto :common_tasks2
 
 
 :chk_winget
 for /f "tokens=2,*" %%a in ('powershell Get-AppxPackage -Name Microsoft.DesktopAppInstaller^| findstr /i "WindowsApps"') do set "winget_dir=%%b"
-if not exist "%winget_dir%\winget.exe" (
-	if %ins_att% GEQ 1 (
-		set err_num=e01
-
-	)
-	call :install_winget
-)
+if not exist "%winget_dir%\winget.exe" goto :install_winget
 
 goto :eof
 
@@ -735,7 +713,6 @@ powershell -NoLogo -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy
 
 cd %~dp0
 
-set /a inst_att = %ins_att% + 1
 call :chk_winget
 set path=%path%;%winget_dir%
 
@@ -859,85 +836,83 @@ goto :finalize
 :error_table
 rem Load error table
 
-rem CSU 2.0+ Deprecation Feature Notices
-rem Refrain from using warn_resume in the error message itself
-
 :e01
-	set err_desc=You need to run this script as administrator 
-	set err_act_desc=
-	set err_act=
-	set err_post_fix_act=
-	set err_type=-1
-	goto :setup_except
+set err_num=e01
+set err_desc=You need to install Java from Oracle Corporation.
+set err_act_desc=Visit the Java download page, then download and install Java.
+set err_act=start "" https://java.com/en/download/
+set err_post_fix_act=goto :java_retry
+set err_type=-1
+goto :setup_except
 
 
-:e02
-	set err_num=e02
-	set err_desc=%file% could not be found at %path%
-	set err_act_desc=
-	set err_act=
-	set err_post_fix_act=
-	set warn_resume=
-	set err_type=-1
-	goto :setup_except
+:w02
+set err_num=w02
+set err_desc=Minecraft was not detected as an installed program on your device, if you've installed Minecraft without using the MSI installer, you may safely ignore this warning. Otherwise, you will need to download Minecraft.
+set err_act_desc=Download Minecraft from the official download page
+set err_act=start "" https://www.minecraft.net/en-us/download
+set err_post_fix_act=goto :mc_java_detect
+set warn_resume=mc_java_detect
+set err_type=-1
+goto :setup_except
 
 
 :e03
-	set err_num=e03
-	set err_desc=The configuration working directory is not valid, it may not exist or missing configuration files.
-	set err_act_desc=find an error that cannot be occurred... congrats, you found an Easter egg...! somehow...
-	set err_act=
-	set err_post_fix_act=goto :eof
-	set err_type=10
-	goto :setup_except
+set err_num=e03
+set err_desc=The configuration working directory is not valid, it may not exist or missing configuration files.
+set err_act_desc=find an error that cannot be occurred... congrats, you found an Easter egg...! somehow...
+set err_act=start "" https://youtube.com/watch?v=dQw4w9WgXcQ
+set err_post_fix_act=goto :eof
+set err_type=10
+goto :setup_except
 
 :e04
-	set err_num=e04
-	set err_desc=The forge binary path "%forge_bin%" is invalid, it may not exist or the binary itself is missing from the path
-	set err_act_desc=Edit the Setup configuration file, correct or remove invalid entries
-	set err_act=notepad "%CONFIG_DIR%\act_mcautosetup.cfg"
-	set err_post_fix_act=call :forge_retry
-	set err_type=-1
-	goto :setup_except
+set err_num=e04
+set err_desc=The forge binary path "%forge_bin%" is invalid, it may not exist or the binary itself is missing from the path
+set err_act_desc=Edit the Setup configuration file, correct or remove invalid entries
+set err_act=notepad "%CONFIG_DIR%\act_mcautosetup.cfg"
+set err_post_fix_act=call :forge_retry
+set err_type=-1
+goto :setup_except
 
 :forge_retry
-	for /f "delims=" %%a in ('type "%CONFIG_DIR%\act_mcautosetup.cfg"^|findstr /b "forge_bin"') do set %%a
-	set forge_bin=%forge_bin:"=%
-	goto :chk_forge_bin
+for /f "delims=" %%a in ('type "%CONFIG_DIR%\act_mcautosetup.cfg"^|findstr /b "forge_bin"') do set %%a
+set forge_bin=%forge_bin:"=%
+goto :chk_forge_bin
 
 :e05
-	set err_num=e05
-	set err_desc=The log directory %log_dir% is invalid, it may not exist or point to a drive or network location that is unreachable. A temporary directory was used to log this fault. Said temporary location is at: "%temp%" with the file name of: "%SUBFILENAME%.log."
-	set err_act_desc=Edit the Setup configuration file, correct or remove invalid entries
-	set err_act=notepad "%CONFIG_DIR%\act_mcautosetup.cfg"
-	set err_post_fix_act=goto :setlog
-	set err_type=-1
-	goto :setup_except
+set err_num=e05
+set err_desc=The log directory %log_dir% is invalid, it may not exist or point to a drive or network location that is unreachable. A temporary directory was used to log this fault. Said temporary location is at: "%temp%" with the file name of: "%SUBFILENAME%.log."
+set err_act_desc=Edit the Setup configuration file, correct or remove invalid entries
+set err_act=notepad "%CONFIG_DIR%\act_mcautosetup.cfg"
+set err_post_fix_act=goto :setlog
+set err_type=-1
+goto :setup_except
 
 :e06
-	set err_num=e06
-	set err_desc=The Java directory "%java_path%" is invalid, it may not exist or the binaries are missing from the path 
-	set err_act_desc=Edit the Setup configuration file, correct or remove invalid entries
-	set err_act=notepad "%CONFIG_DIR%\act_mcautosetup.cfg"
-	set err_post_fix_act=goto :java_retry
-	set err_type=-1
-	goto :setup_except
+set err_num=e06
+set err_desc=The Java directory "%java_path%" is invalid, it may not exist or the binaries are missing from the path 
+set err_act_desc=Edit the Setup configuration file, correct or remove invalid entries
+set err_act=notepad "%CONFIG_DIR%\act_mcautosetup.cfg"
+set err_post_fix_act=goto :java_retry
+set err_type=-1
+goto :setup_except
 
 :e07
-	set err_num=e07
-	set err_desc=Minecraft was detected to be installed, but the bundled Java Runtime is not available. This may be due to never launching Minecraft into the game itself.
-	set err_act_desc=Open Minecraft and create a 1.12.2 profile, start it and wait for it to set itself up, then once the game opens, close it and return to Setup
-	set err_act=call :new_mc_logic
-	set err_post_fix_act=goto :java_retry
-	set err_type=-1
-	goto :setup_except
+set err_num=e07
+set err_desc=Minecraft was detected to be installed, but the bundled Java Runtime is not available. This may be due to never launching Minecraft into the game itself.
+set err_act_desc=Open Minecraft and create a 1.12.2 profile, start it and wait for it to set itself up, then once the game opens, close it and return to Setup
+set err_act=call :new_mc_logic
+set err_post_fix_act=goto :java_retry
+set err_type=-1
+goto :setup_except
 
 
 
 :java_retry
-	set java_path=
-	for /f "delims=" %%a in ('type "%CONFIG_DIR%\act_mcautosetup.cfg"^|findstr /b "java_path"') do set %%a
-	goto :java_determine
+set java_path=
+for /f "delims=" %%a in ('type "%CONFIG_DIR%\act_mcautosetup.cfg"^|findstr /b "java_path"') do set %%a
+goto :java_determine
 
 rem Internal errors
 :ee00
@@ -970,9 +945,9 @@ goto :setup_except
 
 :diag
 rem set diag_mode=1
-call :incompl
+echo This feature is not implemented
+echo.
 goto :eof
-
 rem echo.
 rem echo Diagnostic mode is enabled
 rem set output=%log_inst%
@@ -994,9 +969,8 @@ if %err_enu%==w color 67
 title ATTENTION REQUIRED - %dbls_brand% Setup
 
 rem Invalid dir will cause the entire error descriptor to crash Setup...
-if not exist %log_inst% (
-	set log_inst=%temp%\%SUBFILENAME%.log
-)
+if %err_num%==e05 set log_inst=%temp%\%SUBFILENAME%.log
+if %err_num%==ee01 set log_inst=%temp%\%SUBFILENAME%.log
 
 if %err_enu%==e echo [%date% %time%] ERROR: %err_desc%>>%log_inst% 
 if %err_enu%==w echo [%date% %time%] WARNING: %err_desc%>>%log_inst%
