@@ -108,80 +108,79 @@ rem Setup parameters
 
 if "%*"=="-?" goto :help
 if defined "%*" (
-if /i "%~1"=="-help" goto :help
+	if /i "%~1"=="-help" goto :help
 
 
 
-rem Help_inst_chk
-if "%~2"=="-?" set help_inst=2
-if "%~3"=="-?" set help_inst=3
-if "%~4"=="-?" set help_inst=4
-if "%~5"=="-?" set help_inst=5
-if "%~6"=="-?" set help_inst=6
-if "%~7"=="-?" set help_inst=7
-if "%~8"=="-?" set help_inst=8
-if "%~9"=="-?" set help_inst=9
+	rem Help_inst_chk
+	if "%~2"=="-?" set help_inst=2
+	if "%~3"=="-?" set help_inst=3
+	if "%~4"=="-?" set help_inst=4
+	if "%~5"=="-?" set help_inst=5
+	if "%~6"=="-?" set help_inst=6
+	if "%~7"=="-?" set help_inst=7
+	if "%~8"=="-?" set help_inst=8
+	if "%~9"=="-?" set help_inst=9
 
 
-if /i "%~1"=="-log" (
-	if "%help_inst%"=="2" goto :help_log_cmd
-	if "%help_inst%"=="3" goto :help_log_cmd
-	if "%~2"=="" goto :help_log_cmd
-	if /i "%~2"=="none" ( set log=0 ) else (set log_dir="%~2")
-)
-if /i "%~2"=="-log" (
-	if "%help_inst%"=="3" goto :help_log_cmd
-	if "%help_inst%"=="4" goto :help_log_cmd
-	if "%~3"=="" goto :help_log_cmd
-	if /i "%~3"=="none" ( set log=0 ) else (set log_dir=%~3)
-)
-if /i "%~3"=="-log" (
-	if "%help_inst%"=="4" goto :help_log_cmd
-	if "%help_inst%"=="5" goto :help_log_cmd
-	if "%~4"=="" goto :help_log_cmd
-	if /i "%~4"=="none" ( set log=0 ) else (set log_dir=%~4)
-)
-if /i "%~4"=="-log" (
-	if "%help_inst%"=="5" goto :help_log_cmd
-	if "%help_inst%"=="6" goto :help_log_cmd
-	if "%~5"=="" goto :help_log_cmd
-	if /i "%~5"=="none" ( set log=0 ) else (set log_dir=%~5)
-)
-if /i "%~5"=="-log" (
-	if "%help_inst%"=="6" goto :help_log_cmd
-	if "%help_inst%"=="7" goto :help_log_cmd
-	if "%~6"=="" goto :help_log_cmd
-	if /i "%~6"=="none" (set log=0 ) else (set log_dir=%~6)
-)
-if /i "%~6"=="-log" (
-	if "%help_inst%"=="7" goto :help_log_cmd
-	if "%help_inst%"=="8" goto :help_log_cmd
-	if "%~7"=="" goto :help_log_cmd
-	if /i "%~7"=="none" (set log=0 ) else (set log_dir=%~7)
-)
-
-
-
-
-if /i "%~1"=="-javapath" (
-	if not defined help_inst ( 
-		set java_path=%~2 
-	) else (
-	if "%help_inst%"=="2" goto :help_java_cmd
-	if "%help_inst%"=="3" goto :help_java_cmd
+	if /i "%~1"=="-log" (
+		if "%help_inst%"=="2" goto :help_log_cmd
+		if "%help_inst%"=="3" goto :help_log_cmd
+		if "%~2"=="" goto :help_log_cmd
+		if /i "%~2"=="none" ( set log=0 ) else (set log_dir="%~2")
 	)
-)
-
-
-if /i "%~3"=="-javapath" (
-	if not defined help_inst (
-		set java_path=%~4 
-	) else (
-	if "%help_inst%"=="4" goto :help_java_cmd
-	if "%help_inst%"=="5" goto :help_java_cmd
+	if /i "%~2"=="-log" (
+		if "%help_inst%"=="3" goto :help_log_cmd
+		if "%help_inst%"=="4" goto :help_log_cmd
+		if "%~3"=="" goto :help_log_cmd
+		if /i "%~3"=="none" ( set log=0 ) else (set log_dir=%~3)
 	)
-)
+	if /i "%~3"=="-log" (
+		if "%help_inst%"=="4" goto :help_log_cmd
+		if "%help_inst%"=="5" goto :help_log_cmd
+		if "%~4"=="" goto :help_log_cmd
+		if /i "%~4"=="none" ( set log=0 ) else (set log_dir=%~4)
+	)
+	if /i "%~4"=="-log" (
+		if "%help_inst%"=="5" goto :help_log_cmd
+		if "%help_inst%"=="6" goto :help_log_cmd
+		if "%~5"=="" goto :help_log_cmd
+		if /i "%~5"=="none" ( set log=0 ) else (set log_dir=%~5)
+	)
+	if /i "%~5"=="-log" (
+		if "%help_inst%"=="6" goto :help_log_cmd
+		if "%help_inst%"=="7" goto :help_log_cmd
+		if "%~6"=="" goto :help_log_cmd
+		if /i "%~6"=="none" (set log=0 ) else (set log_dir=%~6)
+	)
+	if /i "%~6"=="-log" (
+		if "%help_inst%"=="7" goto :help_log_cmd
+		if "%help_inst%"=="8" goto :help_log_cmd
+		if "%~7"=="" goto :help_log_cmd
+		if /i "%~7"=="none" (set log=0 ) else (set log_dir=%~7)
+	)
 
+
+
+
+	if /i "%~1"=="-javapath" (
+		if not defined help_inst ( 
+			set java_path=%~2 
+		) else (
+		if "%help_inst%"=="2" goto :help_java_cmd
+		if "%help_inst%"=="3" goto :help_java_cmd
+		)
+	)
+
+
+	if /i "%~3"=="-javapath" (
+		if not defined help_inst (
+			set java_path=%~4 
+		) else (
+		if "%help_inst%"=="4" goto :help_java_cmd
+		if "%help_inst%"=="5" goto :help_java_cmd
+		)
+	)	
 )
 
 rem if "%*"=="-skip" goto :BBStart
