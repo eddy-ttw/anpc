@@ -20,7 +20,7 @@ for /f "delims=" %%a in ('type "%CONFIG_DIR%\setup.cfg"^|findstr /b "internal.fo
 
 
 set dbls_ver=2.0.114.00000
-set brand_ver=0.2.0.1
+set brand_ver=0.2.0.2
 set dbls_stat=alpha
 
 set dbls_brand=Setup
@@ -267,7 +267,7 @@ goto :sys_chk
 
 :help
 	rem These little utility menus (except for info) don't even interface the logging system and imo is unneccessary, so the whole Exit routine is skipped, for the sake of simplicity.
-	call funct_banner_help
+	call :funct_banner_help
 
 	echo Setup Version: %dbls_ver%
 	echo Version: %brand_ver%
@@ -291,7 +291,7 @@ goto :sys_chk
 
 :help_log_cmd
 	echo.
-	call funct_banner_help
+	call :funct_banner_help
 
 	echo Parameter Help
 	echo.
@@ -313,7 +313,7 @@ goto :sys_chk
 
 :help_nomc_cmd
 	echo.
-	call funct_banner_help
+	call :funct_banner_help
 
 	echo Parameter Help
 	echo.
